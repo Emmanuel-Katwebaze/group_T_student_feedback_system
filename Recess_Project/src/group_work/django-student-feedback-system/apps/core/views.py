@@ -3,7 +3,7 @@ from django.contrib.auth.models import auth
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .models import Student
+from .models import Student, Course
 from django.contrib.auth.hashers import make_password
 
 
@@ -129,8 +129,70 @@ def update_student(request, student_id):
 
     return redirect('admin-dashboard-students')
 
+@login_required(login_url='admin-signin')
+def admin_courses(request):
+
+    course_records = Course.objects.all()
+    context = {'segment': 'courses', 'course_records': course_records}
+
+    return render(request, 'project_admin/courses.html', context)
+
 
 @login_required(login_url='admin-signin')
 def admin_logout(request):
     auth.logout(request)
     return redirect('admin-signin')
+
+@login_required(login_url='admin-signin')
+@require_POST
+def add_course(request):
+    course_name = request.POST['new_course_name']
+    course_code = request.POST['new_course_code']
+    department = request.POST['new_department']
+    credit_hours = request.POST['new_credit_hours']
+    
+    # Create a new Course object and save it to the database
+    course = Course(
+        course_name=course_name,
+        course_code=course_code,
+        department=department,
+        credit_hours=credit_hours
+        
+    )
+    if course is not None:
+        course.save()
+        messages.success(request, 'New Course added successfully.')
+    else:
+        messages.error(request, 'Error adding course.')
+    return redirect('admin-dashboard-courses')
+
+@login_required(login_url='admin-signin')
+@require_POST
+def delete_course(request, course_id):
+    course = get_object_or_404(Course, course_id=course_id)
+    course.delete()
+    messages.success(request, "Course Deleted Successfully")
+    return redirect('admin-dashboard-courses')
+
+@login_required(login_url='admin-signin')
+@require_POST
+def update_course(request, course_id):
+    # Retrieve the course object based on the provided course_id
+    course = get_object_or_404(Course, pk=course_id)
+    course_name = request.POST['course_name']
+    course_code = request.POST['course_code']
+    department = request.POST['department']
+    credit_hours=request.POST['credit_hours']
+
+    try:
+        course.course_name = course_name
+        course.course_code = course_code
+        course.department = department
+        course.credit_hours=credit_hours
+        course.save()
+        messages.success(request, "Course Updated Successfully")
+    except:
+        messages.error(request, "Error Updating Course")
+
+    return redirect('admin-dashboard-courses')
+
