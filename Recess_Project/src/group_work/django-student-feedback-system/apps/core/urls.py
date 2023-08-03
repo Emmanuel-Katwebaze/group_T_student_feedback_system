@@ -27,5 +27,16 @@ urlpatterns = [
          views.update_course, name='update_course'),    
     path('admin_logout',
          views.admin_logout, name='admin_logout'),
+    
+    #     ADMIN FACILITIES
+    path('admin_dashboard/facilities/', views.admin_facilities,
+         name='admin-dashboard-facilities'),
+    path('add_facilities', views.add_facilities, name='add_facilities'),
+    path('delete_facility/<int:pk>', views.delete_facility, name='delete_facility'),
+    path('update_facility/<int:facility_id>',
+         views.update_facility, name='update_facility'),    
+    path('admin_logout',
+         views.admin_logout, name='admin_logout'),
+    
 ]
 
