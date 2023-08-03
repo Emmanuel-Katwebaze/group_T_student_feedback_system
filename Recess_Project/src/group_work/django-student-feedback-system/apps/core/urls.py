@@ -25,6 +25,5 @@ urlpatterns = [
     path('update_instructor/<int:instructor_id>',
          views.update_instructor, name='update_instructor'),
 
-     
 ]
 
