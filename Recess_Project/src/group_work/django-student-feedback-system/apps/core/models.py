@@ -67,3 +67,36 @@ class Course(AbstractBaseUser):
     def __str__(self):
         return self.course_name
     
+    
+    # campus facilities
+
+class facilitiesManager(AbstractBaseUser):
+    def create_user(self, **extra_fields):
+        facilities = self.model(**extra_fields)
+        facilities.save(using=self._db)
+        return facilities
+
+class Campus_facilities(models.Model):
+    campus_facilitiesID = models.BigIntegerField(primary_key=True, unique=True)
+    name = models.CharField(max_length=100)
+    location= models.CharField(max_length=100)
+    contact_information = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
+    availability = models.CharField(max_length=100)
+    # availability = models.BooleanField(default=False)
+    description = models.CharField(max_length=100)
+    hours_of_operation= models.CharField(max_length=100)
+    # enrollment_year = models.PositiveIntegerField()
+
+    # New field for password storage
+    password = models.CharField(max_length=128, default=make_password('12345678'))
+
+    # Set the manager for the custom User model
+    objects = facilitiesManager()
+
+    # Use the student_id as the unique identifier for authentication
+    USERNAME_FIELD = 'campus_facilitiesID'
+
+    def __str__(self):
+        return f"{self.name}"
+    

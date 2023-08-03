@@ -3,7 +3,7 @@ from django.contrib.auth.models import auth
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .models import Student, Course
+from .models import Student, Course,Campus_facilities
 from django.contrib.auth.hashers import make_password
 
 
@@ -195,4 +195,92 @@ def update_course(request, course_id):
         messages.error(request, "Error Updating Course")
 
     return redirect('admin-dashboard-courses')
+
+
+
+# Campus facilities
+
+@login_required(login_url='admin-signin')
+def admin_facilities(request):
+    facilities_records = Campus_facilities.objects.all()
+    context = {'segment': 'facilities', 'facilities_records': facilities_records}
+    return render(request, 'project_admin/Campus_facilities.html', context)
+
+
+
+
+@login_required(login_url='admin-signin')
+@require_POST
+def add_facilities(request):
+    campus_facilitiesID = request.POST['campus_facilitiesID']
+    name = request.POST['name']
+    description= request.POST['description']
+    availability = request.POST['availability']
+    location = request.POST['location']
+    contact_information = request.POST['contact_information']
+    hours_of_operation= request.POST['hours_of_operation']
+    
+    # Create a new Course object and save it to the database
+    campus_facilities = Campus_facilities(
+        campus_facilitiesID=campus_facilitiesID,
+        name=name,
+        availability=availability,
+        location=location,
+        contact_information=contact_information,
+        hours_of_operation=hours_of_operation,
+        description=description
+        
+    )
+    if campus_facilities is not None:
+        campus_facilities.save()
+        messages.success(request, 'New facility added successfully.')
+    else:
+        messages.error(request, 'Error adding facility.')
+    return redirect('admin-dashboard-facilities')
+
+
+
+@login_required(login_url='admin-signin')
+@require_POST
+def delete_facility(request, pk):
+    # Similar to delete_student function but for Campus_facities model
+    facility = get_object_or_404(Campus_facilities, campus_facilitiesID=pk)
+    facility.delete()
+    messages.success(request, "Facility Deleted Successfully")
+    return redirect('admin-dashboard-facilities')
+
+
+@login_required(login_url='admin-signin')
+@require_POST
+def update_facility(request, facility_id):
+    # Retrieve the facility object based on the provided facility_id
+    facility = get_object_or_404(Campus_facilities, campus_facilitiesID=facility_id)
+    name = request.POST['name']
+    contact_information = request.POST['contact_information']
+    location = request.POST['location']
+    availability = request.POST['availability']
+    description = request.POST['description']
+    hours_of_operation = request.POST['hours_of_operation']
+    
+
+    
+
+    facility.name = name
+    facility.location = location
+    facility.availability = availability
+    facility.contact_information = contact_information
+    facility.description = description
+    facility.hours_of_operation = hours_of_operation
+    facility.save()
+    
+
+    if facility is not None:
+        facility.save()
+        messages.success(request, ' Facility updated successfully.')
+    else:
+        messages.error(request, 'Error updating facility.')
+    return redirect('admin-dashboard-facilities')
+
+
+
 
