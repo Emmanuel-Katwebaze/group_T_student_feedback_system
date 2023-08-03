@@ -3,7 +3,7 @@ from django.contrib.auth.models import auth
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .models import Student, Course,Campus_facilities
+from .models import Student, Course,Campus_facilities,Instructor
 from django.contrib.auth.hashers import make_password
 
 
@@ -29,10 +29,13 @@ def admin_signin(request):
 def dashboard(request):
     # Get the total number of student records in the database
     total_students = Student.objects.count()
+    # Get the total number of Instructor records in the database
+    total_instructors = Instructor.objects.all().count()
 
     context = {
         'segment': 'index',
         'total_students': total_students,  # Add the count to the context
+        'total_instructors': total_instructors,
     }
 
     return render(request, 'project_admin/index.html', context)
@@ -143,6 +146,91 @@ def admin_logout(request):
     auth.logout(request)
     return redirect('admin-signin')
 
+                # --=========================--
+                #           Instructors 
+                # --=======================---
+
+
+@login_required(login_url='admin-signin')
+def admin_instructors(request):
+
+    instructor_records = Instructor.objects.all()
+    context = {'segment': 'instructors', 'instructor_records': instructor_records}
+
+    return render(request, 'project_admin/instructors.html', context)
+
+# Add Instructor to the database
+
+@login_required(login_url='admin-signin')
+@require_POST
+def add_instructor(request):
+    first_name = request.POST['new_first_name']
+    instructor_id = request.POST['new_instructor_id']
+    last_name = request.POST['new_last_name']
+    email = request.POST['new_email']
+    department = request.POST['new_department']
+
+    # Validate the uniqueness of the email
+    if Instructor.objects.filter(email=email).exists():
+        messages.error(request, 'Email address is already in use.')
+        return redirect('admin-dashboard-instructors')
+    
+    # Validate the uniqueness of the instructor_id
+    if Instructor.objects.filter(instructor_id=instructor_id).exists():
+        messages.error(request, 'Instructor Id already in use')
+        return redirect('admin-dashboard-instructors') 
+
+    # Create a new Instructor object and save it to the database
+    instructor = Instructor(
+        instructor_id=instructor_id,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        department=department,
+    )
+    if instructor is not None:
+        instructor.save()
+        messages.success(request, 'New Instructor added successfully.')
+    else:
+        messages.error(request, 'Error adding Instructor.')
+    return redirect('admin-dashboard-instructors')
+
+
+# delete Instructor
+
+@login_required(login_url='admin-signin')
+@require_POST
+def delete_instructor(request, pk):
+    instructor = Instructor.objects.get(instructor_id=pk)
+    instructor.delete()
+    messages.success(
+        request, "Instructor Deleted Successfully")
+    return redirect('admin-dashboard-instructors')
+
+# Update Instructor
+@login_required(login_url='admin-signin')
+@require_POST
+def update_instructor(request, instructor_id):
+    # Retrieve the student object based on the provided student_id
+    instructor = get_object_or_404(Instructor, pk=instructor_id)
+    first_name = request.POST['first_name']
+    last_name = request.POST['last_name']
+    email = request.POST['email']
+    department = request.POST['department']
+   
+
+    try:
+
+        instructor.first_name = first_name
+        instructor.last_name = last_name
+        instructor.email = email
+        instructor.department = department
+        instructor.save()
+        messages.success(request, "Student Update Successfully")
+    except:
+        messages.error(request, "Error Updating Student")
+
+    return redirect('admin-dashboard-instructors')
 @login_required(login_url='admin-signin')
 @require_POST
 def add_course(request):
