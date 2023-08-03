@@ -40,3 +40,37 @@ class Student(AbstractBaseUser):
     def check_password(self, raw_password):
         # Compare the provided raw_password with the stored password hash
         return check_password(raw_password, self.password)
+
+
+
+# Instructor 
+class InstructorManager(BaseUserManager):
+    def create_instructor(self, **extra_fields):
+        instructor = self.model(**extra_fields)
+        instructor.save(using=self._db)
+        return instructor
+
+class Instructor(AbstractBaseUser):
+    instructor_id = models.BigIntegerField(primary_key=True, unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    department = models.CharField(max_length=100)
+
+    # New field for password storage
+
+    # Set the manager for the custom User model
+    objects = InstructorManager()
+
+    # Use the student_id as the unique identifier for authentication
+    USERNAME_FIELD = 'instructor_id'
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def get_short_name(self):
+        return self.first_name
+
