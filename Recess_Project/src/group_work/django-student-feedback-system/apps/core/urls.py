@@ -47,5 +47,5 @@ urlpatterns = [
          views.update_facility, name='update_facility'),    
     path('admin_logout',
          views.admin_logout, name='admin_logout'),
-
+]
 
