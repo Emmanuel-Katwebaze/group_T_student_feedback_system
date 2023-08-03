@@ -16,5 +16,27 @@ urlpatterns = [
          views.update_student, name='update_student'),    
     path('admin_logout',
          views.admin_logout, name='admin_logout'),
+
+    #ADMIN COURSES
+        
+    path('admin_dashboard/courses', views.admin_courses,
+         name='admin-dashboard-courses'),
+    path('add_course', views.add_course, name='add_course'),
+    path('delete_course/<int:course_id>', views.delete_course, name='delete_course'),
+    path('update_course/<int:course_id>',
+         views.update_course, name='update_course'),    
+    path('admin_logout',
+         views.admin_logout, name='admin_logout'),
+    
+    #     ADMIN FACILITIES
+    path('admin_dashboard/facilities/', views.admin_facilities,
+         name='admin-dashboard-facilities'),
+    path('add_facilities', views.add_facilities, name='add_facilities'),
+    path('delete_facility/<int:pk>', views.delete_facility, name='delete_facility'),
+    path('update_facility/<int:facility_id>',
+         views.update_facility, name='update_facility'),    
+    path('admin_logout',
+         views.admin_logout, name='admin_logout'),
+    
 ]
 

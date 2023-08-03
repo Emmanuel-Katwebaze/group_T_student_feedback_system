@@ -40,3 +40,63 @@ class Student(AbstractBaseUser):
     def check_password(self, raw_password):
         # Compare the provided raw_password with the stored password hash
         return check_password(raw_password, self.password)
+
+#Course Model
+
+class CourseManager(models.Manager):
+    def create_course(self, **extra_fields):
+        course = self.model(**extra_fields)
+        course.save(using=self._db)
+        return course
+
+class Course(AbstractBaseUser):
+    course_id = models.AutoField(primary_key=True, unique=True)
+    course_name = models.CharField(max_length=255)
+    course_code = models.CharField(max_length=20)
+    department = models.CharField(max_length=100)
+    credit_hours = models.IntegerField()
+    # New field for password storage
+    password = models.CharField(max_length=128, default=make_password('12345678'))
+
+    # Set the manager for the custom User model
+    objects = CourseManager()
+
+    # Use the student_id as the unique identifier for authentication
+    USERNAME_FIELD = 'course_id'
+
+    def __str__(self):
+        return self.course_name
+    
+    
+    # campus facilities
+
+class facilitiesManager(AbstractBaseUser):
+    def create_user(self, **extra_fields):
+        facilities = self.model(**extra_fields)
+        facilities.save(using=self._db)
+        return facilities
+
+class Campus_facilities(models.Model):
+    campus_facilitiesID = models.BigIntegerField(primary_key=True, unique=True)
+    name = models.CharField(max_length=100)
+    location= models.CharField(max_length=100)
+    contact_information = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
+    availability = models.CharField(max_length=100)
+    # availability = models.BooleanField(default=False)
+    description = models.CharField(max_length=100)
+    hours_of_operation= models.CharField(max_length=100)
+    # enrollment_year = models.PositiveIntegerField()
+
+    # New field for password storage
+    password = models.CharField(max_length=128, default=make_password('12345678'))
+
+    # Set the manager for the custom User model
+    objects = facilitiesManager()
+
+    # Use the student_id as the unique identifier for authentication
+    USERNAME_FIELD = 'campus_facilitiesID'
+
+    def __str__(self):
+        return f"{self.name}"
+    
