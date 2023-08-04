@@ -47,5 +47,15 @@ urlpatterns = [
          views.update_facility, name='update_facility'),    
     path('admin_logout',
          views.admin_logout, name='admin_logout'),
+
+     # ADMIN FORMS
+     path('admin_dashboard/forms/', views.forms, name='admin_dashboard_forms'),
+     path('create_form/', views.create_form, name='create_form'),
+    
+     path('admin_dashboard/forms/<str:category>/manage/add_question/<int:form_id>/', views.add_question, name='add_question'),
+     path('admin_dashboard/forms/<str:category>/manage/view_form/<int:form_id>/', views.view_form, name='view_form'),
+     path('save_form/<int:form_id>/', views.save_form, name='save_form'),
+     path('view_summary_data/<int:form_id>/',
+     views.view_summary_data, name='view_summary_data'),
 ]
 

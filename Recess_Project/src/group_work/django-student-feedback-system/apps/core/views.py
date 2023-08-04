@@ -370,5 +370,260 @@ def update_facility(request, facility_id):
     return redirect('admin-dashboard-facilities')
 
 
+# FORMS
+
+def forms(request):
+    context = {'segment': 'forms'}
+    return render(request, 'project_admin/forms.html', context)
+@login_required(login_url='admin-signin')
+def manage_forms(request, category):
+    form_category = FormCategory.objects.get(category=category)
+    forms = Form.objects.filter(categoryID=form_category)
+    # Fetch all campus facilities from the database
+    campus_facilities = CampusFacility.objects.all()
+    instructors = Instructor.objects.all()
+    courses = Course.objects.all()
+    # Get the search query from the URL parameters
+    query = request.GET.get('query', '')
+    print(query)
+    if query:
+        if form_category.category == 'instructors':
+            instructors = instructors.filter(
+                Q(first_name__icontains=query) | Q(
+                    last_name__icontains=query) | Q(department__icontains=query)
+            )
+        elif form_category.category == 'courses':
+            courses = courses.filter(
+                Q(course_name__icontains=query) | Q(
+                    course_code__icontains=query) | Q(department__icontains=query)
+            )
+
+    if request.method == 'POST':
+        form_title = request.POST['form_title']
+        if form_category.category == 'facilities':
+            selected_facility_id = request.POST['facility']
+            selected_facility = CampusFacility.objects.get(
+                facility_id=selected_facility_id)
+
+            form = Form.objects.create(
+                title=form_title, categoryID=form_category, content_object=selected_facility)
+        elif form_category.category == 'instructors':
+            selected_instructor_id = request.POST['instructor']
+            selected_instructor = Instructor.objects.get(
+                instructor_id=selected_instructor_id)
+            form = Form.objects.create(
+                title=form_title, categoryID=form_category, content_object=selected_instructor)
+        else:
+            selected_course_id = request.POST['course']
+            selected_course = Course.objects.get(
+                course_id=selected_course_id)
+
+            form = Form.objects.create(
+                title=form_title, categoryID=form_category, content_object=selected_course)
+
+            # request.session['current_form_id'] = form.id  # Store the current form ID in the session for later use
+        return redirect('add_question', form_category, form.id)
+
+    context = {
+        'form_category': form_category.category,
+        'campus_facilities': campus_facilities,
+        'instructors': instructors,
+        'courses': courses,
+        'forms': forms,
+        'search_query': query,
+    }
+
+    return render(request, 'project_admin/create_form.html', context)
+
+@login_required(login_url='admin-signin')
+def view_all_forms(request):
+    forms = Form.objects.all()
+    return render(request, 'project_admin/view_all_forms.html', {'forms': forms})
+
+
+
+
+# views.py
+
+@login_required(login_url='admin-signin')
+def view_form(request, category, form_id):
+    try:
+        form = Form.objects.get(id=form_id)
+        print(form)
+        print(category)
+        questions = Question.objects.filter(form=form)
+        form_category = FormCategory.objects.get(category=category)
+        print(form_category.category)
+        for question in questions:
+            if question.question_type == 'multipleChoice':
+
+                # Convert the 'options' string to a Python object
+                options = eval(question.options)
+                question.options = options
+        context = {
+            'form': form, 'questions': questions, 'category': form_category.category
+        }
+        return render(request, 'project_admin/view_form.html', context)
+    except Form.DoesNotExist:
+        return redirect('view_all_forms')
+
+#create form
+
+def create_form(request):
+    if request.method == 'POST':
+        form_title = request.POST['form_title']
+        form = Form.objects.create(title=form_title)
+        # request.session['current_form_id'] = form.id  # Store the current form ID in the session for later use
+        return redirect('add_question', form.id)
+
+    return render(request, 'project_admin/create_form.html')
+
+#add question
+def add_question(request, category, form_id):
+    try:
+        form = Form.objects.get(id=form_id)
+    except Form.DoesNotExist:
+        return redirect('create_form')
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question_data = form.cleaned_data
+            question_data['form'] = form
+            Question.objects.create(**question_data)
+            return redirect('add_question', form_id=form_id)
+
+    questions = Question.objects.filter(form=form)
+    return render(request, 'project_admin/feedback.html', {'form': form, 'questions': questions})
+
+# save form
+
+def extract_values_from_options(options):
+    numbers = []
+    for option in options:
+        # Remove the 'Options: ' prefix
+        option = option.replace('Options: ', '')
+        # Convert the remaining string to an integer
+        number = int(option.strip())
+        numbers.append(number)
+    return numbers
+
+@login_required(login_url='admin-signin')
+@csrf_exempt
+def save_form(request, form_id):
+    try:
+        form = Form.objects.get(id=form_id)
+        questions = Question.objects.filter(form=form)
+        print(form)
+        print(request.POST.get('questionsData', None))
+        if request.method == 'POST':
+            questions_data = request.POST.get('questionsData', None)
+            if questions_data:
+                questions_data = json.loads(questions_data)
+                for question_data in questions_data:
+                    question = Question(
+                        form=form,
+                        question=question_data['question'],
+                        question_type=question_data['questionType']
+                    )
+                    question.save()
+                    if question_data['questionType'] == 'multipleChoice':
+                        options = question_data.get('options', '')
+                        options = extract_values_from_options(options)
+                        print(options)
+                        question.options = options
+                        question.save()
+
+                return JsonResponse({'message': 'Form data saved successfully'})
+
+        # Redirect to a new form creation page if not an AJAX POST request
+        return redirect('create_form')
+
+    except Form.DoesNotExist:
+        return redirect('create_form')
+
+
+#view form
+@login_required(login_url='admin-signin')
+def view_form(request, category, form_id):
+    try:
+        form = Form.objects.get(id=form_id)
+        print(form)
+        print(category)
+        questions = Question.objects.filter(form=form)
+        form_category = FormCategory.objects.get(category=category)
+        print(form_category.category)
+        for question in questions:
+            if question.question_type == 'multipleChoice':
+
+                # Convert the 'options' string to a Python object
+                options = eval(question.options)
+                question.options = options
+        context = {
+            'form': form, 'questions': questions, 'category': form_category.category
+        }
+        return render(request, 'project_admin/view_form.html', context)
+    except Form.DoesNotExist:
+        return redirect('view_all_forms')
+
+@login_required(login_url='admin-signin')
+def view_summary_data(request, form_id):
+    try:
+        form = Form.objects.get(id=form_id)
+        questions = Question.objects.filter(form=form)
+        all_responses = StudentResponse.objects.filter(form=form)
+
+        visualization_type = request.GET.get(
+            'visualization_type', 'bar')  # Default to bar graph
+
+        # Convert all_responses to a pandas DataFrame
+        response_data = []
+        for response in all_responses:
+            response_data.append({
+                'student_name': response.student_name,
+                'question': response.question.question,
+                'response_text': response.response_text,
+                'response_choice': response.response_choice,
+            })
+        print(response_data)
+        df = pd.DataFrame(response_data)
+
+        # Generate data visualizations based on the selected type
+        has_responses = False  # Initialize flag to check if there are responses
+        if len(response_data) > 0:
+            has_responses = True  # Set flag to True if there are responses
+            for question in questions.filter(question_type='multipleChoice'):
+                plt.figure(figsize=(8, 6))
+                # plt.title(question.question)
+
+                if visualization_type == 'bar':
+                    sns.countplot(data=df[df['question'] ==
+                                  question.question], x='response_choice')
+                    plt.xticks(rotation=45)
+                elif visualization_type == 'pie':
+                    counts = df[df['question'] ==
+                                question.question]['response_choice'].value_counts()
+                    plt.pie(counts, labels=counts.index,
+                            autopct='%1.1f%%', startangle=140)
+
+                plt.tight_layout()
+                plt.savefig(
+                    f'static/{form.id}_question_{question.id}_visualization.png')
+                plt.close()
+
+        # Render the template for the summary data page
+        return render(request, 'project_admin/view_summary_data.html', {
+            'form': form,
+            'questions': questions,
+            'all_responses': all_responses,
+            'has_responses': has_responses,  # Pass the flag to the template
+        })
+    except Form.DoesNotExist:
+        return redirect('view_all_forms')
+
+
+
+
+
 
 
