@@ -1,0 +1,54 @@
+{% extends 'project_admin/base.html' %}
+
+{% load static %}
+
+{% block title %} Summary Data {% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ form.title }} - Summary Data</h2>
+    <h2>Directed To: {{ form.content_object }} </h2>
+
+    <!-- Visualization type selection dropdown -->
+    <form method="get">
+        <div class="form-group">
+            <label for="visualization-type">Select Visualization Type:</label>
+            <select class="form-control" id="visualization-type" name="visualization_type">
+                <option value="bar">Bar Graph</option>
+                <option value="pie">Pie Chart</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+    </form>
+
+    <div class="mt-3">
+        {% if has_responses %}
+        {% for question in questions %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ question.question }}</h5>
+                <div>
+                    {% if question.question_type == 'multipleChoice' %}
+                    <!-- Use the static tag to create the image URL -->
+                    <div class="d-flex justify-content-center">
+                        <a href="{% static form.id %}_question_{{ question.id }}_visualization.png">
+                            <img src="{% static form.id %}_question_{{ question.id }}_visualization.png" alt="{{ question.question }}" width="500">
+                        </a>
+                    </div>
+                    {% else %}
+                    {% for response in all_responses %}
+                    {% if response.question == question %}
+                    <p>{{ response.response_text }}</p>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No responses available yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
