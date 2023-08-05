@@ -64,86 +64,6 @@
 
 <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
 <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
-{% comment %} <script>
-    function addQuestion() {
-        const question = document.getElementById('question').value;
-        const questionType = document.getElementById('questionType').value;
-        const options = document.getElementById('options').value;
-
-        const questionDiv = document.createElement('div');
-        questionDiv.className = 'card mt-3';
-
-        let questionContent = `<div class="card-body">
-                                  <h5 class="card-title">${question}</h5>
-                                  <input type="hidden" class="question-type" value="${questionType}">
-                               </div>`;
-
-        if (questionType === 'multipleChoice') {
-            questionContent += `<div class="card-body">Options: ${options}</div>`;
-        }
-
-        questionContent += `<div class="card-body">
-                              <button type="button" class="btn btn-sm btn-danger" onclick="deleteQuestion(this)">Delete</button>
-                            </div>`;
-
-        questionDiv.innerHTML = questionContent;
-
-        document.getElementById('questionsList').appendChild(questionDiv);
-    }
-
-    function clearForm() {
-        document.getElementById('question').value = '';
-        document.getElementById('questionType').value = 'text';
-        document.getElementById('options').value = '';
-        document.getElementById('optionsContainer').style.display = 'none';
-    }
-
-    function deleteQuestion(button) {
-        const questionDiv = button.closest('.card');
-        questionDiv.remove();
-    }
-
-    function saveForm() {
-        const formId = "{{ form.id }}"; // Get the form_id from the Django template
-
-        const questionsData = [];
-
-        const questions = document.getElementsByClassName('card');
-        for (const question of questions) {
-            const questionData = {
-                question: question.getElementsByClassName('card-title')[0].innerText,
-                questionType: question.getElementsByClassName('question-type')[0].value
-            };
-
-            if (questionData.questionType === 'multipleChoice') {
-                const optionsContainer = question.getElementsByClassName('card-body')[1];
-                const optionsInputs = optionsContainer.getElementsByTagName('input');
-                const options = Array.from(optionsInputs).map(input => input.value).join(',');
-                questionData.options = options;
-            }
-
-            questionsData.push(questionData);
-        }
-
-        const hiddenQuestionsDataInput = document.getElementById('hiddenQuestionsData');
-        hiddenQuestionsDataInput.value = JSON.stringify(questionsData);
-
-        const hiddenForm = document.getElementById('hiddenForm');
-        hiddenForm.action = '/save_form/' + formId + '/'; // Set the form action URL
-        hiddenForm.submit();
-    }
-    
-
-
-    document.getElementById('questionType').addEventListener('change', function () {
-        const questionType = this.value;
-        if (questionType === 'multipleChoice') {
-            document.getElementById('optionsContainer').style.display = 'block';
-        } else {
-            document.getElementById('optionsContainer').style.display = 'none';
-        }
-    });
-</script> {% endcomment %}
 <script>
     function addQuestion() {
         const question = document.getElementById('question').value;
@@ -176,6 +96,10 @@
         document.getElementById('questionType').value = 'text';
         document.getElementById('options').value = '';
         document.getElementById('optionsContainer').style.display = 'none';
+        const cards = document.getElementsByClassName('card');
+        for (const card of cards){
+            card.style.display = 'none';
+        }
     }
 
     function deleteQuestion(button) {
@@ -188,12 +112,12 @@
     
         const questionsData = [];
     
-        const questions = document.getElementsByClassName('card');
+        const questions = document.getElementsByClassName('card'); 
         for (const question of questions) {
             const questionData = {
                 question: question.getElementsByClassName('card-title')[0].innerText,
                 questionType: question.getElementsByClassName('question-type')[0].value
-            };
+            }; 
     
             if (questionData.questionType === 'multipleChoice') {
                 const optionsContainer = question.getElementsByClassName('card-body')[1];

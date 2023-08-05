@@ -1,26 +1,9 @@
 {% extends 'project_admin/base.html' %}
-<!-- title block -->
+{% load static %}
 {% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-<style>
-  /* Styling for the toast */
-  .toast {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: white;
-    color: var(--primary); /* Use the primary color for the words */
-    opacity: 0.9;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    z-index: 9999;
-    transition: opacity 0.5s;
-  }
-</style>
 {% endblock stylesheets %} {% block content %}
 
 <!-- Header -->
@@ -268,16 +251,6 @@
         >
           {% csrf_token %}
           <div class="form-group">
-            <label for="new_instructor_id">Instructor ID</label>
-            <input
-              type="number"
-              class="form-control"
-              id="new_instructor_id"
-              name="new_instructor_id"
-              placeholder="Enter Instructor ID"
-            />
-          </div>
-          <div class="form-group">
             <label for="new_first_name">First Name</label>
             <input
               type="text"
@@ -331,16 +304,38 @@
   </div>
 </div>
 
-{% if messages %} {% for message in messages %}
-<div class="position-fixed top-0 start-50 translate-middle-x">
-  <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-header">
-      <strong class="me-auto">{{ message.tags }}</strong>
-    </div>
-    <div class="toast-body">{{ message }}</div>
-  </div>
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
+  {% endfor %}
 </div>
-{% endfor %} {% endif %} {% endblock content %}
+{% endif %}
+{% endblock content %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}

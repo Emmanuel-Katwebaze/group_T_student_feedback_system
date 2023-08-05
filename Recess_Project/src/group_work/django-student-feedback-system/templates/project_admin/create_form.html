@@ -2,23 +2,6 @@
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-<style>
-  /* Styling for the toast */
-  .toast {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: white;
-    color: var(--primary); /* Use the primary color for the words */
-    opacity: 0.9;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    z-index: 9999;
-    transition: opacity 0.5s;
-  }
-</style>
 {% endblock stylesheets %}
 
 {% load static %}
@@ -39,7 +22,7 @@
           <label for="facility">Select Campus Facility:</label>
           <select class="form-control" id="facility" name="facility">
               {% for facility in campus_facilities %}
-                  <option value="{{ facility.facility_id }}">{{ facility.facility_name }}</option>
+                  <option value="{{ facility.campus_facilitiesID }}">{{ facility.name }}</option>
               {% endfor %}
           </select>
       </div>
@@ -47,15 +30,15 @@
       <input type="hidden" id="instructor" name="instructor" value="">
       <!-- Add two buttons for 'instructors' form category -->
       <div class="d-flex mt-3">
-        <button type="button" class="btn btn-primary" onclick="showSearchForm()">Choose Instructor</button>
-        <button type="button" class="btn btn-primary mr-2" onclick="viewAllForms()">View All Forms</button>
+        <span class="toggle-text btn btn-link border-bottom border-primary text-primary active" data-target="search_form_container" data-sibling="all_forms_container" onclick="toggleView(this)">Choose Instructor</span>
+        <span class="toggle-text btn btn-link text-primary" data-target="all_forms_container" data-sibling="search_form_container" onclick="toggleView(this)">View All Forms</span>
       </div>
       {% elif form_category == 'courses' %}        
       <input type="hidden" id="course" name="course" value="">
       <!-- Add two buttons for 'courses' form category -->
       <div class="d-flex mt-3">
-        <button type="button" class="btn btn-primary" onclick="showSearchForm()">Choose Course</button>
-        <button type="button" class="btn btn-primary mr-2" onclick="viewAllForms()">View All Forms</button>
+        <span class="toggle-text btn btn-link border-bottom border-primary text-primary active" data-target="search_form_container" data-sibling="all_forms_container" onclick="toggleView(this)">Choose Course</span>
+        <span class="toggle-text btn btn-link text-primary" data-target="all_forms_container" data-sibling="search_form_container" onclick="toggleView(this)">View All Forms</span>
       </div>
       {% endif %}
       {% if form_category == 'instructors' or form_category == 'courses' %}
@@ -75,11 +58,19 @@
   {% if forms %}
   <ul class="list-group mt-3">
       {% for form in forms %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ form.title }} for {{ form.content_object }}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
           <div>
+          {{ form.title }} for {{ form.content_object }}
+          </div>
+          <div class="d-flex">
           <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
           <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View</a>
+          <form action="{% url 'delete_form' form.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </form>
           <div>
       </li>
       {% endfor %}
@@ -119,11 +110,19 @@
   {% if forms %}
   <ul class="list-group mt-3">
       {% for form in forms %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ form.title }} for {{ form.content_object }}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
           <div>
+          {{ form.title }} for {{ form.content_object }}
+          </div>
+          <div class="d-flex">
           <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
           <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View Form</a>
+          <form action="{% url 'delete_form' form.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </form>
           <div>
       </li>
       {% endfor %}
@@ -162,19 +161,48 @@
   <h2>All Forms for Courses</h2>
   {% if forms %}
   <ul class="list-group mt-3">
-      {% for form in forms %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ form.title }} for {{ form.content_object }}
-          <div>
-            <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
-            <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View Form</a>
-            <div>
-      </li>
-      {% endfor %}
+    {% for form in forms %}
+    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
+      <div>
+        {{ form.title }} for {{ form.content_object }}
+      </div>
+      <div class="d-flex">
+        <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
+        <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View Form</a>
+        <form action="{% url 'delete_form' form.id %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+            <i class="fas fa-trash-alt"></i> Delete
+          </button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
   </ul>
   {% else %}
   <p>No forms available.</p>
   {% endif %}
+</div>
+
+{% endif %}
+
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+  {% endfor %}
 </div>
 {% endif %}
 {% endblock %}
@@ -194,6 +222,7 @@
       <!-- Add more instructor details if needed -->
     `;
   }
+
   function selectCourse(courseId, courseName) {
     // Set the value of the hidden input field to the selected course's ID
     document.getElementById('course').value = courseId;
@@ -207,16 +236,28 @@
     `;
   }
 
-  function viewAllForms() {
-    // Hide the search form container and show the container with all forms for instructors
-    document.getElementById('search_form_container').style.display = 'none';
-    document.getElementById('all_forms_container').style.display = 'block';
-  }
+  function toggleView(element) {
+    var targetId = element.getAttribute("data-target");
+    var siblingId = element.getAttribute("data-sibling");
 
-  function showSearchForm() {
-    // Hide the container with all forms for instructors and show the search form container
-    document.getElementById('all_forms_container').style.display = 'none';
-    document.getElementById('search_form_container').style.display = 'block';
+    var targetElement = document.getElementById(targetId);
+    var siblingElement = document.getElementById(siblingId);
+
+    // Show the target element and hide the sibling element
+    targetElement.style.display = 'block';
+    siblingElement.style.display = 'none';
+
+    // Toggle the active and inactive styles
+    var toggleElements = document.querySelectorAll(".toggle-text");
+    toggleElements.forEach(function(toggleElement) {
+      if (toggleElement === element) {
+        toggleElement.classList.add("text-primary", "border-bottom", "border-primary", "active");
+        toggleElement.classList.remove("text-black");
+      } else {
+        toggleElement.classList.remove("text-primary", "border-bottom", "border-primary", "active");
+        toggleElement.classList.add("text-black");
+      }
+    });
   }
 </script>
 {% endblock javascripts %}

@@ -1,4 +1,6 @@
-{% extends 'students/base.html' %} {% block title %} Dashboard {% endblock title %}
+{% extends 'students/base.html' %}
+{% load static %}
+{% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %} 
@@ -36,21 +38,17 @@
                   <h5 class="card-title text-uppercase text-muted mb-0">
                     ANSWERED FORMS
                   </h5>
-                  <span class="h2 font-weight-bold mb-0">350,897</span>
+                  <span class="h2 font-weight-bold mb-0">{{form_responsed_to}}</span>
                 </div>
                 <div class="col-auto">
                   <div
-                    class="icon icon-shape bg-gradient-red text-white rounded-circle shadow"
+                    class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow"
                   >
-                    <i class="ni ni-active-40"></i>
+                  <i class="ni ni-check-bold"></i>
                   </div>
                 </div>
               </div>
               <p class="mt-3 mb-0 text-sm">
-                <span class="text-success mr-2"
-                  ><i class="fa fa-arrow-up"></i> 3.48%</span
-                >
-                <span class="text-nowrap">Since last month</span>
               </p>
             </div>
           </div>
@@ -64,21 +62,17 @@
                   <h5 class="card-title text-uppercase text-muted mb-0">
                     UNANSWERED FORMS
                   </h5>
-                  <span class="h2 font-weight-bold mb-0">2,356</span>
+                  <span class="h2 font-weight-bold mb-0">{{unanswered_forms}}</span>
                 </div>
                 <div class="col-auto">
                   <div
-                    class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow"
+                    class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow"
                   >
-                    <i class="ni ni-chart-pie-35"></i>
+                  <i class="ni ni-paper-diploma"></i>
                   </div>
                 </div>
               </div>
               <p class="mt-3 mb-0 text-sm">
-                <span class="text-success mr-2"
-                  ><i class="fa fa-arrow-up"></i> 3.48%</span
-                >
-                <span class="text-nowrap">Since last month</span>
               </p>
             </div>
           </div>
@@ -88,7 +82,25 @@
     </div>
   </div>
 </div>
-
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+  {% endfor %}
+</div>
+{% endif %}
 <!-- Page content -->
 
 

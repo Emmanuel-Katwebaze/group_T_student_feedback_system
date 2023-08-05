@@ -1,7 +1,26 @@
-{% extends 'project_admin/base.html' %} {% block title %} Dashboard {% endblock title %}
+{% extends 'project_admin/base.html' %}
+{% load static %}
+ {% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
+<style>
+  /* Styling for the toast */
+  .toast {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: var(--primary); /* Use the primary color for the words */
+    opacity: 0.9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 9999;
+    transition: opacity 0.5s;
+  }
+</style>
 {% endblock stylesheets %}
 
 
@@ -46,6 +65,37 @@
         </li>
     </ul>
 </div>
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
 {% endblock %}
 
 
@@ -54,6 +104,26 @@
 
 <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
 <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+<script>
+  // JavaScript to handle the toast fade-out behavior
+  document.addEventListener("DOMContentLoaded", function () {
+    var toasts = document.querySelectorAll(".toast");
 
+    function fadeToast(toast) {
+      setTimeout(function () {
+        toast.style.opacity = "0";
+        setTimeout(function () {
+          toast.remove();
+        }, 500); // Remove the toast after fade-out transition (0.5s)
+      }, 3000); // 5 seconds before fading out the toast
+    }
+
+    toasts.forEach(function (toast) {
+      fadeToast(toast);
+    });
+  });
+
+  // The rest of your JavaScript code...
+</script>
 
 {% endblock javascripts %}

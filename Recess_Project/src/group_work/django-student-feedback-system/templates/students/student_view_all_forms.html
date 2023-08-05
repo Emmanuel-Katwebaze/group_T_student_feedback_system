@@ -1,0 +1,81 @@
+{% extends 'students/base.html' %} 
+{% load static %}
+{% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>All Forms</h2>
+  <!-- Search bar -->
+  <form method="get" class="mt-3">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Search by title or content object" name="q">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    </div>
+  </form>
+
+  {% if forms %}
+  <ul class="list-group mt-3">
+    {% for form in forms %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ form.title }} - {{ form.content_object }}
+      {% if form.id in form_responses %}
+      <div>
+      <span class="badge badge-success badge-pill">&#x2713;</span>
+      <h3>Form Submitted</h3>
+      <div>
+      {% else %}
+      <a href="{% url 'student_view_form' form.id %}" class="btn btn-primary">View</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No forms available.</p>
+  {% endif %}
+</div>
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+<script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+
+{% endblock javascripts %}
