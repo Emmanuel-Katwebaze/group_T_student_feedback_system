@@ -1,24 +1,9 @@
-{% extends 'project_admin/base.html' %} {% block title %} Dashboard {% endblock title %}
+{% extends 'project_admin/base.html' %} 
+{% load static %}
+{% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-<style>
-  /* Styling for the toast */
-  .toast {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: white;
-    color: var(--primary); /* Use the primary color for the words */
-    opacity: 0.9;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    z-index: 9999;
-    transition: opacity 0.5s;
-  }
-</style>
 {% endblock stylesheets %}
 
 
@@ -76,6 +61,7 @@
                 <th scope="col" class="sort" data-sort="status">Description</th>
                 <th scope="col" class="sort" data-sort="status">Availability</th> 
                 <th scope="col" class="sort" data-sort="status">Hours of operation</th>
+                <th scope="col" class="sort" data-sort="status">Actions</th>
               </tr>
             </thead>
             <!-- Table Body -->
@@ -172,11 +158,7 @@
         <form id="editForm" method="POST">
           {% csrf_token %}
           <!-- Add a hidden input field to store the facilities_id -->
-          <input type="hidden" id="facilities_id" name="facilities_id">
-          <div class="form-group">
-            <label for="campus_facilitiesID">Campus FacilitiesID</label>
-            <input type="text" class="form-control ps-0" id="campus_facilitiesID" name="campus_facilitiesID" placeholder="Enter Facility ID">
-          </div>
+          <input type="hidden" id="campus_facilitiesID" name="facilities_id">
           <div class="form-group">
             <label for="name">Name</label>
             <input type="text" class="form-control ps-0 p--2" id="name" name="name" placeholder="Enter Name">
@@ -226,10 +208,6 @@
         <form id="addfacilitiesForm" method="POST" action="{% url 'add_facilities' %}">
           {% csrf_token %}
           <div class="form-group">
-            <label for="campus_facilitiesID">Campus facilities ID</label>
-            <input type="number" class="form-control" id="campus_facilitiesID" name="campus_facilitiesID" placeholder="Enter facilities ID">
-          </div>
-          <div class="form-group">
             <label for="name">Name</label>
             <input type="text" class="form-control" id="name" name="name" placeholder="Enter Name">
           </div>
@@ -265,18 +243,35 @@
 </div>
 
 {% if messages %}
+<div class="container mt-3">
   {% for message in messages %}
-    <div class="position-fixed top-0 start-50 translate-middle-x">
-      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto">{{ message.tags }}</strong>
-        </div>
-        <div class="toast-body">
-          {{ message }}
-        </div>
-      </div>
-    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
   {% endfor %}
+</div>
 {% endif %}
 
 
@@ -302,7 +297,6 @@
       var description= row.find(".description").text().trim();
       var availability = row.find(".availability").text().trim();
       var hours_of_operation = row.find(".hours_of_operation").text().trim();
-      var password = row.find(".password").val();
       // Fetch other fields as needed
       $("#campus_facilitiesID").val(campus_facilitiesID);
       $("#editModal #name").val(name);
@@ -312,8 +306,6 @@
       $("#editModal #availability").val(availability);
       $("#editModal #hours_of_operation ").val(hours_of_operation );
 
-      $("#editModal #password_edit").val(password);
-      // Set the form action URL to the specific facilities's edit URL
       $("#editForm").attr("action", "/update_facility/" + $("#campus_facilitiesID").val());
       // Show the modal
       $("#editModal").modal("show");
@@ -357,21 +349,6 @@
   });
 
   // The rest of your JavaScript code...
-</script>
-<script>
-  function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    const eyeIcon = document.getElementById(inputId === 'new_password' ? 'eyeIcon' : 'confirmEyeIcon');
-    if (input.type === 'password') {
-      input.type = 'text';
-      eyeIcon.classList.remove('fa-eye-slash');
-      eyeIcon.classList.add('fa-eye');
-    } else {
-      input.type = 'password';
-      eyeIcon.classList.remove('fa-eye');
-      eyeIcon.classList.add('fa-eye-slash');
-    }
-  }
 </script>
 
 {% endblock javascripts %}

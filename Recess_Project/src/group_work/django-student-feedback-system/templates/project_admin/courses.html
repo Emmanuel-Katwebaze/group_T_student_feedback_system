@@ -1,4 +1,6 @@
-{% extends 'project_admin/base.html' %} {% block title %} Dashboard {% endblock title %}
+{% extends 'project_admin/base.html' %} 
+{% load static %}
+{% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
@@ -105,7 +107,7 @@
         <!-- Delete Button -->
         <form action="{% url 'delete_course' course.course_id %}" method="POST">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirm delete?')"></button>
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirm delete?')">
             <i class="fas fa-trash-alt"></i> Delete
           </button>
         </form>
@@ -231,18 +233,35 @@
 </div>
 
 {% if messages %}
+<div class="container mt-3">
   {% for message in messages %}
-    <div class="position-fixed top-0 start-50 translate-middle-x">
-      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto">{{ message.tags }}</strong>
-        </div>
-        <div class="toast-body">
-          {{ message }}
-        </div>
-      </div>
-    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
   {% endfor %}
+</div>
 {% endif %}
 
 

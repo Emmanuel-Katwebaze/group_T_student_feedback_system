@@ -3,9 +3,18 @@ from django.contrib.auth.models import auth
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .models import Student, Course,Campus_facilities,Instructor
+from .models import Student, Course, CampusFacility, Instructor, FormCategory, Form, Question, StudentResponse
 from django.contrib.auth.hashers import make_password
-
+from .forms import QuestionForm
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+import matplotlib
+matplotlib.use('Agg')
 
 
 def admin_signin(request):
@@ -17,9 +26,10 @@ def admin_signin(request):
         print(admin)
         if admin is not None:
             auth.login(request, admin)
+            messages.success(request, 'Login Successful')
             return redirect('admin-dashboard')
         else:
-            messages.info(request, 'Invalid credentials')
+            messages.error(request, 'Invalid credentials')
             return redirect('admin-signin')
     else:
         return render(request, 'project_admin/admin_auth/signin.html')
@@ -31,11 +41,19 @@ def dashboard(request):
     total_students = Student.objects.count()
     # Get the total number of Instructor records in the database
     total_instructors = Instructor.objects.all().count()
+    total_courses = Course.objects.all().count()
+    total_facilities = CampusFacility.objects.all().count()
+    total_forms = Form.objects.all().count()
+    total_answered_forms = StudentResponse.objects.values_list('form_id', flat=True).distinct().count()
 
     context = {
         'segment': 'index',
         'total_students': total_students,  # Add the count to the context
         'total_instructors': total_instructors,
+        'total_courses': total_courses,
+        'total_facilities': total_facilities,
+        'total_forms': total_forms,
+        'total_answered_forms': total_answered_forms
     }
 
     return render(request, 'project_admin/index.html', context)
@@ -113,7 +131,7 @@ def update_student(request, student_id):
     password_edit = request.POST['password_edit']
 
     try:
-            # Check if the new password is not already hashed
+        # Check if the new password is not already hashed
         if password_edit and not password_edit.startswith('pbkdf2_sha256'):
             student.password = make_password(password_edit)
         else:
@@ -126,11 +144,12 @@ def update_student(request, student_id):
         student.course = course
         student.enrollment_year = enrollment_year
         student.save()
-        messages.success(request, "Student Update Successfully")
+        messages.success(request, "Student Updated Successfully")
     except:
         messages.error(request, "Error Updating Student")
 
     return redirect('admin-dashboard-students')
+
 
 @login_required(login_url='admin-signin')
 def admin_courses(request):
@@ -144,28 +163,30 @@ def admin_courses(request):
 @login_required(login_url='admin-signin')
 def admin_logout(request):
     auth.logout(request)
+    messages.success(request,"Logout Successful")
     return redirect('admin-signin')
 
-                # --=========================--
-                #           Instructors 
-                # --=======================---
+    # --=========================--
+    #           Instructors
+    # --=======================---
 
 
 @login_required(login_url='admin-signin')
 def admin_instructors(request):
 
     instructor_records = Instructor.objects.all()
-    context = {'segment': 'instructors', 'instructor_records': instructor_records}
+    context = {'segment': 'instructors',
+               'instructor_records': instructor_records}
 
     return render(request, 'project_admin/instructors.html', context)
 
 # Add Instructor to the database
 
+
 @login_required(login_url='admin-signin')
 @require_POST
 def add_instructor(request):
     first_name = request.POST['new_first_name']
-    instructor_id = request.POST['new_instructor_id']
     last_name = request.POST['new_last_name']
     email = request.POST['new_email']
     department = request.POST['new_department']
@@ -174,15 +195,9 @@ def add_instructor(request):
     if Instructor.objects.filter(email=email).exists():
         messages.error(request, 'Email address is already in use.')
         return redirect('admin-dashboard-instructors')
-    
-    # Validate the uniqueness of the instructor_id
-    if Instructor.objects.filter(instructor_id=instructor_id).exists():
-        messages.error(request, 'Instructor Id already in use')
-        return redirect('admin-dashboard-instructors') 
 
     # Create a new Instructor object and save it to the database
     instructor = Instructor(
-        instructor_id=instructor_id,
         first_name=first_name,
         last_name=last_name,
         email=email,
@@ -208,6 +223,8 @@ def delete_instructor(request, pk):
     return redirect('admin-dashboard-instructors')
 
 # Update Instructor
+
+
 @login_required(login_url='admin-signin')
 @require_POST
 def update_instructor(request, instructor_id):
@@ -217,7 +234,6 @@ def update_instructor(request, instructor_id):
     last_name = request.POST['last_name']
     email = request.POST['email']
     department = request.POST['department']
-   
 
     try:
 
@@ -226,11 +242,13 @@ def update_instructor(request, instructor_id):
         instructor.email = email
         instructor.department = department
         instructor.save()
-        messages.success(request, "Student Update Successfully")
+        messages.success(request, "Instructor Updated Successfully")
     except:
         messages.error(request, "Error Updating Student")
 
     return redirect('admin-dashboard-instructors')
+
+
 @login_required(login_url='admin-signin')
 @require_POST
 def add_course(request):
@@ -238,14 +256,14 @@ def add_course(request):
     course_code = request.POST['new_course_code']
     department = request.POST['new_department']
     credit_hours = request.POST['new_credit_hours']
-    
+
     # Create a new Course object and save it to the database
     course = Course(
         course_name=course_name,
         course_code=course_code,
         department=department,
         credit_hours=credit_hours
-        
+
     )
     if course is not None:
         course.save()
@@ -253,6 +271,7 @@ def add_course(request):
     else:
         messages.error(request, 'Error adding course.')
     return redirect('admin-dashboard-courses')
+
 
 @login_required(login_url='admin-signin')
 @require_POST
@@ -262,6 +281,7 @@ def delete_course(request, course_id):
     messages.success(request, "Course Deleted Successfully")
     return redirect('admin-dashboard-courses')
 
+
 @login_required(login_url='admin-signin')
 @require_POST
 def update_course(request, course_id):
@@ -270,13 +290,13 @@ def update_course(request, course_id):
     course_name = request.POST['course_name']
     course_code = request.POST['course_code']
     department = request.POST['department']
-    credit_hours=request.POST['credit_hours']
+    credit_hours = request.POST['credit_hours']
 
     try:
         course.course_name = course_name
         course.course_code = course_code
         course.department = department
-        course.credit_hours=credit_hours
+        course.credit_hours = credit_hours
         course.save()
         messages.success(request, "Course Updated Successfully")
     except:
@@ -285,54 +305,49 @@ def update_course(request, course_id):
     return redirect('admin-dashboard-courses')
 
 
-
 # Campus facilities
 
 @login_required(login_url='admin-signin')
 def admin_facilities(request):
-    facilities_records = Campus_facilities.objects.all()
-    context = {'segment': 'facilities', 'facilities_records': facilities_records}
+    facilities_records = CampusFacility.objects.all()
+    context = {'segment': 'facilities',
+               'facilities_records': facilities_records}
     return render(request, 'project_admin/Campus_facilities.html', context)
-
-
 
 
 @login_required(login_url='admin-signin')
 @require_POST
 def add_facilities(request):
-    campus_facilitiesID = request.POST['campus_facilitiesID']
     name = request.POST['name']
-    description= request.POST['description']
+    description = request.POST['description']
     availability = request.POST['availability']
     location = request.POST['location']
     contact_information = request.POST['contact_information']
-    hours_of_operation= request.POST['hours_of_operation']
-    
+    hours_of_operation = request.POST['hours_of_operation']
+
     # Create a new Course object and save it to the database
-    campus_facilities = Campus_facilities(
-        campus_facilitiesID=campus_facilitiesID,
+    campusFacility = CampusFacility(
         name=name,
         availability=availability,
         location=location,
         contact_information=contact_information,
         hours_of_operation=hours_of_operation,
         description=description
-        
+
     )
-    if campus_facilities is not None:
-        campus_facilities.save()
+    if campusFacility is not None:
+        campusFacility.save()
         messages.success(request, 'New facility added successfully.')
     else:
         messages.error(request, 'Error adding facility.')
     return redirect('admin-dashboard-facilities')
 
 
-
 @login_required(login_url='admin-signin')
 @require_POST
 def delete_facility(request, pk):
     # Similar to delete_student function but for Campus_facities model
-    facility = get_object_or_404(Campus_facilities, campus_facilitiesID=pk)
+    facility = get_object_or_404(CampusFacility, campus_facilitiesID=pk)
     facility.delete()
     messages.success(request, "Facility Deleted Successfully")
     return redirect('admin-dashboard-facilities')
@@ -342,16 +357,13 @@ def delete_facility(request, pk):
 @require_POST
 def update_facility(request, facility_id):
     # Retrieve the facility object based on the provided facility_id
-    facility = get_object_or_404(Campus_facilities, campus_facilitiesID=facility_id)
+    facility = get_object_or_404(CampusFacility, campus_facilitiesID=facility_id)
     name = request.POST['name']
     contact_information = request.POST['contact_information']
     location = request.POST['location']
     availability = request.POST['availability']
     description = request.POST['description']
     hours_of_operation = request.POST['hours_of_operation']
-    
-
-    
 
     facility.name = name
     facility.location = location
@@ -360,7 +372,6 @@ def update_facility(request, facility_id):
     facility.description = description
     facility.hours_of_operation = hours_of_operation
     facility.save()
-    
 
     if facility is not None:
         facility.save()
@@ -371,10 +382,12 @@ def update_facility(request, facility_id):
 
 
 # FORMS
-
+@login_required(login_url='admin-signin')
 def forms(request):
     context = {'segment': 'forms'}
     return render(request, 'project_admin/forms.html', context)
+
+
 @login_required(login_url='admin-signin')
 def manage_forms(request, category):
     form_category = FormCategory.objects.get(category=category)
@@ -385,7 +398,6 @@ def manage_forms(request, category):
     courses = Course.objects.all()
     # Get the search query from the URL parameters
     query = request.GET.get('query', '')
-    print(query)
     if query:
         if form_category.category == 'instructors':
             instructors = instructors.filter(
@@ -400,24 +412,37 @@ def manage_forms(request, category):
 
     if request.method == 'POST':
         form_title = request.POST['form_title']
-        if form_category.category == 'facilities':
+        if form_title == '':
+            messages.error(request, "Please Type a Title")
+            return redirect('manage_forms', form_category)           
+        elif form_category.category == 'facilities':
             selected_facility_id = request.POST['facility']
-            selected_facility = CampusFacility.objects.get(
-                facility_id=selected_facility_id)
-
+            try:
+                selected_facility = CampusFacility.objects.get(
+                campus_facilitiesID=selected_facility_id)
+            except Exception as e:
+                messages.error(request, "Please Select a Facility")
+                return redirect('manage_forms', form_category)
             form = Form.objects.create(
                 title=form_title, categoryID=form_category, content_object=selected_facility)
         elif form_category.category == 'instructors':
             selected_instructor_id = request.POST['instructor']
-            selected_instructor = Instructor.objects.get(
+            try:
+                selected_instructor = Instructor.objects.get(
                 instructor_id=selected_instructor_id)
+            except Exception as e:
+                messages.error(request, "Please Select an Instructor")
+                return redirect('manage_forms', form_category)
             form = Form.objects.create(
                 title=form_title, categoryID=form_category, content_object=selected_instructor)
         else:
             selected_course_id = request.POST['course']
-            selected_course = Course.objects.get(
+            try:
+                selected_course = Course.objects.get(
                 course_id=selected_course_id)
-
+            except Exception as e:
+                messages.error(request, "Please Select a Course")
+                return redirect('manage_forms', form_category)
             form = Form.objects.create(
                 title=form_title, categoryID=form_category, content_object=selected_course)
 
@@ -431,19 +456,11 @@ def manage_forms(request, category):
         'courses': courses,
         'forms': forms,
         'search_query': query,
+        'segment': 'forms'
     }
 
     return render(request, 'project_admin/create_form.html', context)
 
-@login_required(login_url='admin-signin')
-def view_all_forms(request):
-    forms = Form.objects.all()
-    return render(request, 'project_admin/view_all_forms.html', {'forms': forms})
-
-
-
-
-# views.py
 
 @login_required(login_url='admin-signin')
 def view_form(request, category, form_id):
@@ -461,14 +478,15 @@ def view_form(request, category, form_id):
                 options = eval(question.options)
                 question.options = options
         context = {
-            'form': form, 'questions': questions, 'category': form_category.category
+            'form': form, 'questions': questions, 'category': form_category.category, 'segment': 'forms'
         }
         return render(request, 'project_admin/view_form.html', context)
     except Form.DoesNotExist:
-        return redirect('view_all_forms')
+        return redirect('admin_dashboard_forms')
 
-#create form
+# create form
 
+@login_required(login_url='admin-signin')
 def create_form(request):
     if request.method == 'POST':
         form_title = request.POST['form_title']
@@ -478,7 +496,22 @@ def create_form(request):
 
     return render(request, 'project_admin/create_form.html')
 
-#add question
+
+# delete form
+@login_required(login_url='admin-signin')
+@require_POST
+def delete_form(request, form_id):
+    form = get_object_or_404(Form, pk=form_id)
+    print("I am here")
+    form.responses.all().delete()
+    form.delete()
+    print("I am here 2")
+    messages.success(request, "Form Deleted Successfully")
+    return redirect('admin_dashboard_forms')
+
+# add question
+
+@login_required(login_url='admin-signin')
 def add_question(request, category, form_id):
     try:
         form = Form.objects.get(id=form_id)
@@ -494,22 +527,23 @@ def add_question(request, category, form_id):
             return redirect('add_question', form_id=form_id)
 
     questions = Question.objects.filter(form=form)
-    return render(request, 'project_admin/feedback.html', {'form': form, 'questions': questions})
+    return render(request, 'project_admin/feedback.html', {'form': form, 'questions': questions, 'segment': 'forms'})
 
 # save form
 
+
 def extract_values_from_options(options):
-    numbers = []
+    values = []
     for option in options:
         # Remove the 'Options: ' prefix
         option = option.replace('Options: ', '')
         # Convert the remaining string to an integer
-        number = int(option.strip())
-        numbers.append(number)
-    return numbers
+        value = option.strip()
+        values.append(value)
+    return values
+
 
 @login_required(login_url='admin-signin')
-@csrf_exempt
 def save_form(request, form_id):
     try:
         form = Form.objects.get(id=form_id)
@@ -534,7 +568,8 @@ def save_form(request, form_id):
                         question.options = options
                         question.save()
 
-                return JsonResponse({'message': 'Form data saved successfully'})
+                messages.success(request, 'New Form created successfully.')
+                return redirect('admin_dashboard_forms')
 
         # Redirect to a new form creation page if not an AJAX POST request
         return redirect('create_form')
@@ -543,7 +578,7 @@ def save_form(request, form_id):
         return redirect('create_form')
 
 
-#view form
+# view form
 @login_required(login_url='admin-signin')
 def view_form(request, category, form_id):
     try:
@@ -560,11 +595,12 @@ def view_form(request, category, form_id):
                 options = eval(question.options)
                 question.options = options
         context = {
-            'form': form, 'questions': questions, 'category': form_category.category
+            'form': form, 'questions': questions, 'category': form_category.category, 'segment': 'forms'
         }
         return render(request, 'project_admin/view_form.html', context)
     except Form.DoesNotExist:
-        return redirect('view_all_forms')
+        return redirect('admin_dashboard_forms')
+
 
 @login_required(login_url='admin-signin')
 def view_summary_data(request, form_id):
@@ -580,7 +616,7 @@ def view_summary_data(request, form_id):
         response_data = []
         for response in all_responses:
             response_data.append({
-                'student_name': response.student_name,
+                'student_ID': response.student_ID,
                 'question': response.question.question,
                 'response_text': response.response_text,
                 'response_choice': response.response_choice,
@@ -617,13 +653,7 @@ def view_summary_data(request, form_id):
             'questions': questions,
             'all_responses': all_responses,
             'has_responses': has_responses,  # Pass the flag to the template
+            'segment': 'forms'
         })
     except Form.DoesNotExist:
-        return redirect('view_all_forms')
-
-
-
-
-
-
-
+        return redirect('admin_dashboard_forms')
