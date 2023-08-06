@@ -1,3 +1,5 @@
+from django.http import HttpResponse
+import csv
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import auth
 from django.contrib import messages
@@ -10,7 +12,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 from django.db.models import Q
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import matplotlib
@@ -44,7 +45,8 @@ def dashboard(request):
     total_courses = Course.objects.all().count()
     total_facilities = CampusFacility.objects.all().count()
     total_forms = Form.objects.all().count()
-    total_answered_forms = StudentResponse.objects.values_list('form_id', flat=True).distinct().count()
+    total_answered_forms = StudentResponse.objects.values_list(
+        'form_id', flat=True).distinct().count()
 
     context = {
         'segment': 'index',
@@ -163,7 +165,7 @@ def admin_courses(request):
 @login_required(login_url='admin-signin')
 def admin_logout(request):
     auth.logout(request)
-    messages.success(request,"Logout Successful")
+    messages.success(request, "Logout Successful")
     return redirect('admin-signin')
 
     # --=========================--
@@ -357,7 +359,8 @@ def delete_facility(request, pk):
 @require_POST
 def update_facility(request, facility_id):
     # Retrieve the facility object based on the provided facility_id
-    facility = get_object_or_404(CampusFacility, campus_facilitiesID=facility_id)
+    facility = get_object_or_404(
+        CampusFacility, campus_facilitiesID=facility_id)
     name = request.POST['name']
     contact_information = request.POST['contact_information']
     location = request.POST['location']
@@ -414,12 +417,12 @@ def manage_forms(request, category):
         form_title = request.POST['form_title']
         if form_title == '':
             messages.error(request, "Please Type a Title")
-            return redirect('manage_forms', form_category)           
+            return redirect('manage_forms', form_category)
         elif form_category.category == 'facilities':
             selected_facility_id = request.POST['facility']
             try:
                 selected_facility = CampusFacility.objects.get(
-                campus_facilitiesID=selected_facility_id)
+                    campus_facilitiesID=selected_facility_id)
             except Exception as e:
                 messages.error(request, "Please Select a Facility")
                 return redirect('manage_forms', form_category)
@@ -429,7 +432,7 @@ def manage_forms(request, category):
             selected_instructor_id = request.POST['instructor']
             try:
                 selected_instructor = Instructor.objects.get(
-                instructor_id=selected_instructor_id)
+                    instructor_id=selected_instructor_id)
             except Exception as e:
                 messages.error(request, "Please Select an Instructor")
                 return redirect('manage_forms', form_category)
@@ -439,7 +442,7 @@ def manage_forms(request, category):
             selected_course_id = request.POST['course']
             try:
                 selected_course = Course.objects.get(
-                course_id=selected_course_id)
+                    course_id=selected_course_id)
             except Exception as e:
                 messages.error(request, "Please Select a Course")
                 return redirect('manage_forms', form_category)
@@ -486,6 +489,7 @@ def view_form(request, category, form_id):
 
 # create form
 
+
 @login_required(login_url='admin-signin')
 def create_form(request):
     if request.method == 'POST':
@@ -510,6 +514,7 @@ def delete_form(request, form_id):
     return redirect('admin_dashboard_forms')
 
 # add question
+
 
 @login_required(login_url='admin-signin')
 def add_question(request, category, form_id):
@@ -608,7 +613,6 @@ def view_summary_data(request, form_id):
         form = Form.objects.get(id=form_id)
         questions = Question.objects.filter(form=form)
         all_responses = StudentResponse.objects.filter(form=form)
-
         visualization_type = request.GET.get(
             'visualization_type', 'bar')  # Default to bar graph
 
@@ -621,8 +625,39 @@ def view_summary_data(request, form_id):
                 'response_text': response.response_text,
                 'response_choice': response.response_choice,
             })
-        print(response_data)
         df = pd.DataFrame(response_data)
+
+        # Create separate dataframes for text-based and option-based responses
+        text_responses = df.pivot(
+            index='student_ID', columns='question', values='response_text')
+        option_responses = df.pivot(
+            index='student_ID', columns='question', values='response_choice')
+
+        # Export CSV if 'export' parameter is present in the request
+        if 'export' in request.GET and request.GET['export'] == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{form.title}_responses.csv"'
+            writer = csv.writer(response)
+
+            # Write the questions with text responses and their corresponding responses
+            text_questions = [
+                question.question for question in questions if question.question in text_responses.columns]
+            writer.writerow(['Student ID'] + text_questions)
+            for student_id, row in text_responses.iterrows():
+                response_row = [
+                    row[question] if question in row else '' for question in text_questions]
+                writer.writerow([student_id] + response_row)
+
+            # Write the questions with option responses and their corresponding responses
+            option_questions = [
+                question.question for question in questions if question.question in option_responses.columns]
+            writer.writerow(['Student ID'] + option_questions)
+            for student_id, row in option_responses.iterrows():
+                response_row = [
+                    row[question] if question in row else '' for question in option_questions]
+                writer.writerow([student_id] + response_row)
+
+            return response
 
         # Generate data visualizations based on the selected type
         has_responses = False  # Initialize flag to check if there are responses
