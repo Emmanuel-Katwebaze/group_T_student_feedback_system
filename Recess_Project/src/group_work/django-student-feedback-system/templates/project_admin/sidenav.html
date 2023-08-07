@@ -1,8 +1,15 @@
-<nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+<nav
+  class="sidenav navbar navbar-vertical fixed-left navbar-expand-xs navbar-light bg-white"
+  id="sidenav-main"
+>
   <div class="scrollbar-inner">
     <!-- Brand -->
-    <div class="sidenav-header  align-items-center">
-      <a class="navbar-brand font-weight-bold" href="/admin_dashboard" style="color: #6772E5">
+    <div class="sidenav-header align-items-center">
+      <a
+        class="navbar-brand font-weight-bold"
+        href="/admin_dashboard"
+        style="color: #6772e5"
+      >
         Admin Panel
       </a>
     </div>
@@ -12,31 +19,52 @@
         <!-- Nav items -->
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link {% if 'index' in segment %} active {% endif %}" href="/admin_dashboard">
-              <i class="ni ni-tv-2 text-primary"></i>
+            <a
+              class="nav-link {% if 'index' in segment %} active {% endif %}"
+              href="/admin_dashboard"
+            >
+            <i class="bi bi-speedometer2 text-primary" style="font-size: 20px;"></i>
               <span class="nav-link-text">Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'students' in segment %} active {% endif %}" href="/admin_dashboard/students">
+            <a
+              class="nav-link {% if 'students' in segment %} active {% endif %}"
+              href="/admin_dashboard/students"
+            >
               <i class="ni ni-single-02 text-orange"></i>
               <span class="nav-link-text">Students</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'map' in segment %} active {% endif %}" href="/admin_dashboard/facilities/">
+            <a
+              class="nav-link {% if 'facilities' in segment %} active {% endif %}"
+              href="/admin_dashboard/facilities/"
+            >
               <i class="ni ni-building text-primary"></i>
               <span class="nav-link-text"> Campus Facilities</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="/admin_dashboard/courses">
+            <a
+              class="nav-link {% if 'courses' in segment %} active {% endif %}"
+              href="/admin_dashboard/courses"
+            >
               <i class="ni ni-books text-yellow"></i>
               <span class="nav-link-text">Courses</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href="/tables.html">
+            <a
+              class="nav-link {% if 'instructors' in segment %} active {% endif %}"
+              href="/admin_dashboard/instructors"
+            >
+              <i class="ni ni-single-02 text-dark"></i>
+              <span class="nav-link-text">Instructors</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'forms' in segment %} active {% endif %}" href="/admin_dashboard/forms/">
               <i class="ni ni-paper-diploma text-default"></i>
               <span class="nav-link-text">Forms</span>
             </a>
@@ -44,12 +72,11 @@
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'admin_logout' %}">
-              <i class="ni ni-user-run text-red"></i>
+              <i class="bi bi-box-arrow-right text-purple" style="font-size: 20px;"></i>
               <span class="nav-link-text">Logout</span>
             </a>
-          </li>            
+          </li>
         </ul>
-        
       </div>
     </div>
   </div>

@@ -1,15 +1,36 @@
 {% extends 'students/students_auth/base.html' %}
-
+{% load static %}
 {% block content %}
 {% if messages %}
-  <div class="container mt-3">
-    {% for message in messages %}
-      <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  </div>
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    {% if message.tags == 'success'%}
+    <script>
+      $.toast({
+        heading: 'Success',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'success',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+    {% elif message.tags == 'error'%}
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center'
+      });
+    </script>
+    {% endif %}
+  {% endfor %}
+</div>
 {% endif %}
 <div class="min-vh-100 d-flex align-items-center justify-content-center">
   <div class="col-md-6">

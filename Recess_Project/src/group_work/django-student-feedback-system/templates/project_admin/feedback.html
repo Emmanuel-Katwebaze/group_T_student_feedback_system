@@ -1,0 +1,150 @@
+{% extends 'project_admin/base.html' %} {% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  /* Styling for the toast */
+  .toast {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: var(--primary); /* Use the primary color for the words */
+    opacity: 0.9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 9999;
+    transition: opacity 0.5s;
+  }
+</style>
+{% endblock stylesheets %}
+
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Feedback Form</h2>
+    <div class="form-group">
+        <label for="question">Question:</label>
+        <input type="text" class="form-control" id="question">
+    </div>
+    <div class="form-group">
+        <label for="questionType">Question Type:</label>
+        <select class="form-control" id="questionType">
+            <option value="text">Paragraph</option>
+            <option value="multipleChoice">Multiple Choice</option>
+        </select>
+    </div>
+    <div class="form-group" id="optionsContainer" style="display:none;">
+        <label for="options">Options (comma-separated):</label>
+        <input type="text" class="form-control" id="options">
+    </div>
+    <button type="button" class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+    <button type="button" class="btn btn-danger" onclick="clearForm()">Clear Form</button>
+
+    <div id="questionsList" class="mt-5">
+        <!-- Questions will be displayed here -->
+    </div>
+
+    <button type="button" class="btn btn-success mt-3" onclick="saveForm()">Save Form</button>
+</div>
+<form id="hiddenForm" method="post" action="{% url 'save_form' form.id %}" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="questionsData" id="hiddenQuestionsData">
+    <button type="submit" style="display: none;" id="submitFormButton"></button>
+</form>
+
+{% endblock %}
+
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+<script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+<script>
+    function addQuestion() {
+        const question = document.getElementById('question').value;
+        const questionType = document.getElementById('questionType').value;
+        const options = document.getElementById('options').value;
+
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'card mt-3';
+
+        let questionContent = `<div class="card-body">
+                                  <h5 class="card-title">${question}</h5>
+                                  <input type="hidden" class="question-type" value="${questionType}">
+                               </div>`;
+
+        if (questionType === 'multipleChoice') {
+            questionContent += `<div class="card-body">Options: ${options}</div>`;
+        }
+
+        questionContent += `<div class="card-body">
+                              <button type="button" class="btn btn-sm btn-danger" onclick="deleteQuestion(this)">Delete</button>
+                            </div>`;
+
+        questionDiv.innerHTML = questionContent;
+
+        document.getElementById('questionsList').appendChild(questionDiv);
+    }
+
+    function clearForm() {
+        document.getElementById('question').value = '';
+        document.getElementById('questionType').value = 'text';
+        document.getElementById('options').value = '';
+        document.getElementById('optionsContainer').style.display = 'none';
+        const cards = document.getElementsByClassName('card');
+        for (const card of cards){
+            card.style.display = 'none';
+        }
+    }
+
+    function deleteQuestion(button) {
+        const questionDiv = button.closest('.card');
+        questionDiv.remove();
+    }
+
+    function saveForm() {
+        const formId = "{{ form.id }}"; // Get the form_id from the Django template
+    
+        const questionsData = [];
+    
+        const questions = document.getElementsByClassName('card'); 
+        for (const question of questions) {
+            const questionData = {
+                question: question.getElementsByClassName('card-title')[0].innerText,
+                questionType: question.getElementsByClassName('question-type')[0].value
+            }; 
+    
+            if (questionData.questionType === 'multipleChoice') {
+                const optionsContainer = question.getElementsByClassName('card-body')[1];
+                const optionsText = optionsContainer.innerText;
+                const options = optionsText.split(',').map(option => option.trim());
+                questionData.options = options;
+            }
+    
+            questionsData.push(questionData);
+        }
+    
+    // Set the questionsData in the hidden input field
+    document.getElementById('hiddenQuestionsData').value = JSON.stringify(questionsData);
+
+    // Trigger form submission
+    document.getElementById('submitFormButton').click();
+    }    
+    
+
+
+    document.getElementById('questionType').addEventListener('change', function () {
+        const questionType = this.value;
+        if (questionType === 'multipleChoice') {
+            document.getElementById('optionsContainer').style.display = 'block';
+        } else {
+            document.getElementById('optionsContainer').style.display = 'none';
+        }
+    });
+</script>
+{% endblock javascripts %}

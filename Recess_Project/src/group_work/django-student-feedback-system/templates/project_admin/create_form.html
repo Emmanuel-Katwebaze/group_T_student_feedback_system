@@ -1,0 +1,264 @@
+{% extends 'project_admin/base.html' %} {% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% load static %}
+
+<!-- ... existing code ... -->
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Feedback Form</h2>
+  <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+          <label for="form_title">Form Title:</label>
+          <input type="text" class="form-control" id="form_title" name="form_title">
+      </div>
+      {% if form_category == 'facilities' %}
+      <div class="form-group">
+          <label for="facility">Select Campus Facility:</label>
+          <select class="form-control" id="facility" name="facility">
+              {% for facility in campus_facilities %}
+                  <option value="{{ facility.campus_facilitiesID }}">{{ facility.name }}</option>
+              {% endfor %}
+          </select>
+      </div>
+      {% elif form_category == 'instructors' %}        
+      <input type="hidden" id="instructor" name="instructor" value="">
+      <!-- Add two buttons for 'instructors' form category -->
+      <div class="d-flex mt-3">
+        <span class="toggle-text btn btn-link border-bottom border-primary text-primary active" data-target="search_form_container" data-sibling="all_forms_container" onclick="toggleView(this)">Choose Instructor</span>
+        <span class="toggle-text btn btn-link text-primary" data-target="all_forms_container" data-sibling="search_form_container" onclick="toggleView(this)">View All Forms</span>
+      </div>
+      {% elif form_category == 'courses' %}        
+      <input type="hidden" id="course" name="course" value="">
+      <!-- Add two buttons for 'courses' form category -->
+      <div class="d-flex mt-3">
+        <span class="toggle-text btn btn-link border-bottom border-primary text-primary active" data-target="search_form_container" data-sibling="all_forms_container" onclick="toggleView(this)">Choose Course</span>
+        <span class="toggle-text btn btn-link text-primary" data-target="all_forms_container" data-sibling="search_form_container" onclick="toggleView(this)">View All Forms</span>
+      </div>
+      {% endif %}
+      {% if form_category == 'instructors' or form_category == 'courses' %}
+      <button type="submit" class="btn btn-primary mt-3">Create Form</button>
+      {% else %}      
+      <button type="submit" class="btn btn-primary">Create Form</button>
+      {% endif %}
+  </form>
+
+  <!-- Add a div to display the selected instructor's details -->
+  <div id="selected_instructor_info" class="mt-3"></div>
+  <div id="selected_course_info" class="mt-3"></div>
+</div>
+{% if form_category == 'facilities' %}
+<div class="container mt-5" id="all_forms_container">
+  <h2>All Forms for Facilities</h2>
+  {% if forms %}
+  <ul class="list-group mt-3">
+      {% for form in forms %}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
+          <div>
+          {{ form.title }} for {{ form.content_object }}
+          </div>
+          <div class="d-flex">
+          <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
+          <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View</a>
+          <form action="{% url 'delete_form' form.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </form>
+          <div>
+      </li>
+      {% endfor %}
+  </ul>
+  {% else %}
+  <p>No forms available.</p>
+  {% endif %}
+</div>
+{% elif form_category == 'instructors' %} 
+<!-- Add the search bar at the end of the template -->
+<div class="container mt-5" id="search_form_container">
+  <h2>Search Instructors</h2>
+  <form method="get">
+      <div class="form-group">
+          <input type="text" class="form-control" id="search_query" name="query" placeholder="Search by name or department" value="{{ search_query }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  {% if instructors %}
+  <ul class="list-group mt-3">
+      {% for instructor in instructors %}
+      <!-- Replace the list items with clickable links to select an instructor -->
+      <li class="list-group-item">
+          <a href="#" onclick="selectInstructor('{{ instructor.instructor_id }}', '{{ instructor.first_name }} {{ instructor.last_name }} - {{ instructor.department }}')">
+              {{ instructor.first_name }} {{ instructor.last_name }} - {{ instructor.department }}
+          </a>
+      </li>
+      {% endfor %}
+  </ul>
+  {% else %}
+  <p>No instructors found.</p>
+  {% endif %}
+</div>
+
+<div class="container mt-5" id="all_forms_container" style="display:none;">
+  <h2>All Forms for Instructors</h2>
+  {% if forms %}
+  <ul class="list-group mt-3">
+      {% for form in forms %}
+      <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
+          <div>
+          {{ form.title }} for {{ form.content_object }}
+          </div>
+          <div class="d-flex">
+          <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
+          <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View Form</a>
+          <form action="{% url 'delete_form' form.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </form>
+          <div>
+      </li>
+      {% endfor %}
+  </ul>
+  {% else %}
+  <p>No forms available.</p>
+  {% endif %}
+</div>
+
+{% elif form_category == 'courses' %} 
+<!-- Add the search bar at the end of the template -->
+<div class="container mt-5" id="search_form_container">
+  <h2>Search Courses</h2>
+  <form method="get">
+      <div class="form-group">
+          <input type="text" class="form-control" id="search_query" name="query" placeholder="Search by course name, course code or department" value="{{ search_query }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  {% if courses %}
+  <ul class="list-group mt-3">
+      {% for course in courses %}
+      <li class="list-group-item">
+          <a href="#" onclick="selectCourse('{{ course.course_id }}', '{{ course.course_name }} {{ course.course_code }} - {{ course.department }}')">
+              {{ course.course_name }} {{ course.course_code }} - {{ course.department }}
+          </a>
+      </li>
+      {% endfor %}
+  </ul>
+  {% else %}
+  <p>No Courses found.</p>
+  {% endif %}
+</div>
+
+<div class="container mt-5" id="all_forms_container" style="display:none;">
+  <h2>All Forms for Courses</h2>
+  {% if forms %}
+  <ul class="list-group mt-3">
+    {% for form in forms %}
+    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center">
+      <div>
+        {{ form.title }} for {{ form.content_object }}
+      </div>
+      <div class="d-flex">
+        <a href="{% url 'view_summary_data' form.id %}" class="btn btn-secondary">View Responses</a>
+        <a href="{% url 'view_form' form_category form.id %}" class="btn btn-primary">View Form</a>
+        <form action="{% url 'delete_form' form.id %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" onclick="return confirm(&quot;Confirm delete?&quot;)">
+            <i class="fas fa-trash-alt"></i> Delete
+          </button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No forms available.</p>
+  {% endif %}
+</div>
+
+{% endif %}
+
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
+    <script src="{% static 'js/jquery.toast.js' %}"></script>
+    <script>
+      $.toast({
+        heading: 'Error',
+        text: "{{message}}",
+        showHideTransition: 'slide',
+        icon: 'error',
+        position: 'top-center',
+        bgColor: '#FFF',
+        textColor: '#5E72E4'
+      });
+    </script>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+  function selectInstructor(instructorId, instructorName) {
+    // Set the value of the hidden input field to the selected instructor's ID
+    document.getElementById('instructor').value = instructorId;
+    
+    // Display the selected instructor's details in the div
+    var instructorInfoDiv = document.getElementById('selected_instructor_info');
+    instructorInfoDiv.innerHTML = `
+      <p><strong>Selected Instructor:</strong> ${instructorName}</p>
+      <p><strong>Instructor ID:</strong> ${instructorId}</p>
+      <!-- Add more instructor details if needed -->
+    `;
+  }
+
+  function selectCourse(courseId, courseName) {
+    // Set the value of the hidden input field to the selected course's ID
+    document.getElementById('course').value = courseId;
+    
+    // Display the selected course's details in the div
+    var courseInfoDiv = document.getElementById('selected_course_info');
+    courseInfoDiv.innerHTML = `
+      <p><strong>Selected Course:</strong> ${courseName}</p>
+      <p><strong>Course ID:</strong> ${courseId}</p>
+      <!-- Add more course details if needed -->
+    `;
+  }
+
+  function toggleView(element) {
+    var targetId = element.getAttribute("data-target");
+    var siblingId = element.getAttribute("data-sibling");
+
+    var targetElement = document.getElementById(targetId);
+    var siblingElement = document.getElementById(siblingId);
+
+    // Show the target element and hide the sibling element
+    targetElement.style.display = 'block';
+    siblingElement.style.display = 'none';
+
+    // Toggle the active and inactive styles
+    var toggleElements = document.querySelectorAll(".toggle-text");
+    toggleElements.forEach(function(toggleElement) {
+      if (toggleElement === element) {
+        toggleElement.classList.add("text-primary", "border-bottom", "border-primary", "active");
+        toggleElement.classList.remove("text-black");
+      } else {
+        toggleElement.classList.remove("text-primary", "border-bottom", "border-primary", "active");
+        toggleElement.classList.add("text-black");
+      }
+    });
+  }
+</script>
+{% endblock javascripts %}
+

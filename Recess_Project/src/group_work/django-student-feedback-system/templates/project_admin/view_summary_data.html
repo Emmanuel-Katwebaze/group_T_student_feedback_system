@@ -1,0 +1,101 @@
+{% extends 'project_admin/base.html' %}
+
+{% load static %}
+
+{% block title %} Summary Data {% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ form.title }} - Summary Data</h2>
+    <h2>Directed To: {{ form.content_object }} </h2>
+
+    <!-- Visualization type selection dropdown -->
+    <form method="get">
+        <div class="form-group">
+            <label for="visualization-type">Select Visualization Type:</label>
+            <select class="form-control" id="visualization-type" name="visualization_type">
+                <option value="bar">Bar Graph</option>
+                <option value="pie">Pie Chart</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+
+        <!-- Print button -->
+        <button type="button" class="btn btn-secondary" id="print-button">Print Summary</button>
+    </form>
+    <!-- Export button -->
+    <form method="get" class="mt-3">
+        <input type="hidden" name="export" value="csv">
+        <button type="submit" class="btn btn-success">Export as CSV</button>
+    </form>
+
+    <!-- Start of print section -->
+    <div class="mt-3 print-section">  <!-- Added print-section class here -->
+        <h2 class="additional-info">{{ form.title }} - Summary Data</h2>
+        <h2 class="additional-info">Directed To: {{ form.content_object }}</h2>
+        {% if has_responses %}
+        {% for question in questions %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ question.question }}</h5>
+                <div>
+                    {% if question.question_type == 'multipleChoice' %}
+                    <!-- Use the static tag to create the image URL -->
+                    <div class="d-flex justify-content-center">
+                        <a href="{% static form.id %}_question_{{ question.id }}_visualization.png">
+                            <img src="{% static form.id %}_question_{{ question.id }}_visualization.png" alt="{{ question.question }}" width="500">
+                        </a>
+                    </div>
+                    {% else %}
+                    {% for response in all_responses %}
+                    {% if response.question == question %}
+                    <p>{{ response.response_text }}</p>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No responses available yet</p>
+        {% endif %}
+    </div>
+    <!-- End of print section -->
+</div>
+
+<!-- CSS media query for printing -->
+<style>
+    @media screen {
+        /* Hide the additional h2 elements on the normal screen */
+        .print-section h2.additional-info {
+            display: none;
+        }
+    }
+    @media print {
+        /* Show the additional h2 elements on the print page */
+        .print-section h2.additional-info {
+            display: block;
+        }
+        body * {
+            visibility: hidden;
+        }
+        .print-section, .print-section * {
+            visibility: visible;
+        }
+        .print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    }
+</style>
+
+<script>
+    // JavaScript to handle the print button click event
+    document.getElementById("print-button").addEventListener("click", function() {
+        window.print();
+    });
+</script>
+
+{% endblock %}
