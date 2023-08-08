@@ -626,38 +626,42 @@ def view_summary_data(request, form_id):
                 'response_choice': response.response_choice,
             })
         df = pd.DataFrame(response_data)
+        
 
-        # Create separate dataframes for text-based and option-based responses
-        text_responses = df.pivot(
-            index='student_ID', columns='question', values='response_text')
-        option_responses = df.pivot(
-            index='student_ID', columns='question', values='response_choice')
+        try:
+            # Create separate dataframes for text-based and option-based responses
+            text_responses = df.pivot(
+                index='student_ID', columns='question', values='response_text')
+            option_responses = df.pivot(
+                index='student_ID', columns='question', values='response_choice')
 
-        # Export CSV if 'export' parameter is present in the request
-        if 'export' in request.GET and request.GET['export'] == 'csv':
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="{form.title}_responses.csv"'
-            writer = csv.writer(response)
+            # Export CSV if 'export' parameter is present in the request
+            if 'export' in request.GET and request.GET['export'] == 'csv':
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = f'attachment; filename="{form.title}_responses.csv"'
+                writer = csv.writer(response)
 
-            # Write the questions with text responses and their corresponding responses
-            text_questions = [
-                question.question for question in questions if question.question in text_responses.columns]
-            writer.writerow(['Student ID'] + text_questions)
-            for student_id, row in text_responses.iterrows():
-                response_row = [
-                    row[question] if question in row else '' for question in text_questions]
-                writer.writerow([student_id] + response_row)
+                # Write the questions with text responses and their corresponding responses
+                text_questions = [
+                    question.question for question in questions if question.question in text_responses.columns]
+                writer.writerow(['Student ID'] + text_questions)
+                for student_id, row in text_responses.iterrows():
+                    response_row = [
+                        row[question] if question in row else '' for question in text_questions]
+                    writer.writerow([student_id] + response_row)
 
-            # Write the questions with option responses and their corresponding responses
-            option_questions = [
-                question.question for question in questions if question.question in option_responses.columns]
-            writer.writerow(['Student ID'] + option_questions)
-            for student_id, row in option_responses.iterrows():
-                response_row = [
-                    row[question] if question in row else '' for question in option_questions]
-                writer.writerow([student_id] + response_row)
+                # Write the questions with option responses and their corresponding responses
+                option_questions = [
+                    question.question for question in questions if question.question in option_responses.columns]
+                writer.writerow(['Student ID'] + option_questions)
+                for student_id, row in option_responses.iterrows():
+                    response_row = [
+                        row[question] if question in row else '' for question in option_questions]
+                    writer.writerow([student_id] + response_row)
 
-            return response
+                return response
+        except Exception as e:
+            has_responses = False 
 
         # Generate data visualizations based on the selected type
         has_responses = False  # Initialize flag to check if there are responses
