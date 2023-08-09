@@ -1,94 +1,133 @@
-# Recess Project Template
+# Student Feedback System - Group T
+
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![Project Logo](Recess_Project/resources/images/logo.png)
 
 ## Table of Contents
+
 - [Introduction](#introduction)
-- [Documentation](#documentation)
-- [Reports and Presentations](#reports-and-presentations)
-- [Resources](#resources)
+- [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Contributing](#contributing)
+- [Interface Design](#interface-design)
 - [License](#license)
 
 ## Introduction
-Welcome to the Recess Project Template! This repository serves as a structured template for working on your `recess projects` in `groups of five`. It provides guidelines and a well-organized file structure to help you efficiently collaborate, manage your individual work, and deliver successful group projects.
 
-### Collaboration Process
-```mermaid
-flowchart LR
+## Scope
 
-subgraph "Repository"
-  Repo((Repository))
-end
+This software will provide support for universities that wish to have a structured and organized format to get and evaluate feedback from the students about the instructors, courses and campus facilities.
 
-subgraph "User A"
-  fork[Fork]
-  branchA[Branch A]
-end
+### Goals and Objectives
 
-subgraph "User B"
-  branchB[Branch B]
-end
+The primary goal of this software design project is to develop a comprehensive and user-friendly system that facilitates universities in obtaining, managing, and analyzing feedback from students, with a focus on instructors, courses, and campus facilities. By achieving this overarching goal, the software aims to fulfill the following specific objectives:
 
-subgraph "User C"
-  branchC[Branch C]
-end
+### Streamlined Feedback Collection
 
-subgraph "Pull Request"
-  pullRequest[Pull Request]
-end
+The software will enable universities to effortlessly gather feedback from students through a well-designed and intuitive interface. It will offer a standardized mechanism for students to share their opinions on instructors, courses, and campus facilities, ensuring that the feedback collection process is convenient and consistent across various departments and programs.
 
-Repo --> fork
-fork --> branchA
-fork --> branchB
-fork --> branchC
+### Comprehensive Data Management
 
-branchA --> pullRequest
-branchB --> pullRequest
-branchC --> pullRequest
 
-pullRequest --> Repo
-```
+Our software will provide universities with a centralized platform to efficiently manage and store the collected feedback data. It will organize the feedback submissions, ensuring accurate categorization and easy retrieval. This objective includes implementing features for data filtering, sorting, and search functionalities, allowing university administrators to access relevant information swiftly.
 
----
->> Note: Each Group member has to Own a Branch named as his/her name 
+### In-depth Analysis and Reporting
 
-## Documentation
-Find detailed project documentation in the [docs](Recess_Project/docs) folder. It includes:
-- [Project Overview](./docs/README.md): Get an overview of the project's goals, objectives, and how to use this template effectively.
-- [Project Guidelines](./docs/project_guidelines.md): Learn about the best practices for group collaboration, code organization, and documentation.
-  
-- ## Reports and Presentations
+The software will empower universities to gain valuable insights from the accumulated feedback data. It will offer robust analytical tools that allow administrators to generate insightful reports, charts, and graphs. By identifying trends and patterns, universities can make informed decisions to enhance the quality of instruction, curriculum, and campus facilities.
 
-Submit your final project reports and group presentation in the [reports](Recess_Project/reports) folder:
+### User-Friendly Experience
 
-- Individual project reports: [reports/report_Student1.pdf](Recess_Project/reports/report_Student1.pdf) - [reports/report_Student5.pdf](Recess_Project/reports/report_Student5.pdf)
-- Group presentation: [reports/group_presentation.pptx](Recess_Project/reports/group_presentation.pptx)
+Our software will prioritize user experience, ensuring that both students and administrators find the interface intuitive and easy to navigate. User-friendly design and clear instructions will be integral to achieving this objective, contributing to increased participation and effective utilization of the feedback system.
 
-## Resources
-The [resources](Recess_Project/resources) folder contains additional resources for the project, including:
-- [Images](Recess_Project/resources/images): Store images related to your project (e.g., diagrams, graphics).
-- [Datasets](Recess_Project/resources/datasets): If applicable, keep datasets used in your project for reproducibility.
+
+## Installation
+
+1. Navigate to the [src/group_work/django-student-feedback-system](Recess_Project/src/group_work/django-student-feedback-system) folder directory which is the project directory
+
+2. In the project directory run `pip install -r requirements.txt`
+
+3. Then start the server by running the command `python manage.py runserver`
 
 ## Getting Started
-To begin your recess project, use the `"Use this template"` button to create your individual project repository based on this template. Follow these steps to get started:
 
-1. Clone your individual project repository to your local machine.
-2. Collaborate with your group members on the group project within the [src/group_work](Recess_Project/src/group_work) folder.
-3. Work on your individual contributions within your respective folders in [src/individual_work](./src/individual_work).
-4. Regularly commit and push changes to your repository.
-5. Create pull requests for group project changes and get feedback from your team.
+### Admin Signin
+
+Open your web browser and navigate to `localhost:8000/admin_signin`
+Sign in as an admin using the following credentials:
+`Username: admin`
+`Password: 123`
+
+### Student Signin
+
+Open your web browser and navigate to `localhost:8000/signin`.
+
+### Student Signup
+
+Open your web browser and navigate to `localhost:8000/signup`.
+
+## Interface Design
+
+Admin Signin
+
+<img src="Recess_Project/resources/images/admin_signin.png" alt="Admin Signin" width="400" height="300">
+
+
+Student Signin
+
+<img src="Recess_Project/resources/images/student_signin.png" alt="Student Signin" width="400" height="300">
+
+Student Signup
+
+<img src="Recess_Project/resources/images/student_signup.png" alt="Student Signu[]" width="400" height="400">
+
+
+Student Dashboard
+
+![Student Dashboard](Recess_Project/resources/images/student_dashboard.png)
+
+Student Forms
+
+![Student Forms](Recess_Project/resources/images/student_forms.png)
+
+Admin Dashboard
+
+![Admin Dashboard](Recess_Project/resources/images/admin_dashboard.png)
+
+Admin Forms Section
+
+![Admin Forms Section](Recess_Project/resources/images/forms_section.png)
+
+View All Forms
+
+![View All Forms](Recess_Project/resources/images/view_all_forms.png)
+
+Create Form
+
+![Create Form](Recess_Project/resources/images/create_form.png)
+
+Add Question
+
+![Add Question](Recess_Project/resources/images/add_question1.png)
+
+![Add Question](Recess_Project/resources/images/add_question2.png)
+
+View Summary Data
+
+![View Summary Data](Recess_Project/resources/images/view_summary_data1.png)
+
+![View Summary Data](Recess_Project/resources/images/view_summary_data2.png)
+
+
+
 
 ## ❗️ Note:
+
 - The project will run for 2 weeks starting on 24th July 2022 to 11th August 2023 till 11:59 pm.
 - Email us: jeff.geoff.cis@gmail.com cc. ndigezzalivingstone2@gmail.com and send us the link for the GitHub Repository!
 
-## Contributing
-If you want to contribute to this project template or suggest improvements, please follow the guidelines outlined in [CONTRIBUTING.md](./CONTRIBUTING.md). We welcome your contributions and value your feedback!
 
 ## License
-This project is licensed under the [MIT License](./LICENSE). Feel free to use and modify this template for your own recess projects.
+
+This project is licensed under the [MIT License](./LICENSE). 
 
 ---
