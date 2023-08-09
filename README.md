@@ -93,9 +93,7 @@ Admin Dashboard
 
 ![Admin Dashboard](Recess_Project/resources/images/admin_dashboard.png)
 
-Admin Forms Section
 
-![Admin Forms Section](Recess_Project/resources/images/forms_section.png)
 
 View All Forms
 
