@@ -39,7 +39,6 @@ The software will empower universities to gain valuable insights from the accumu
 
 Our software will prioritize user experience, ensuring that both students and administrators find the interface intuitive and easy to navigate. User-friendly design and clear instructions will be integral to achieving this objective, contributing to increased participation and effective utilization of the feedback system.
 
-
 ## Installation
 
 1. Navigate to the [src/group_work/django-student-feedback-system](Recess_Project/src/group_work/django-student-feedback-system) folder directory which is the project directory
@@ -69,63 +68,55 @@ Open your web browser and navigate to `localhost:8000/signup`.
 
 Admin Signin
 
-<img src="Recess_Project/resources/images/admin_signin.png" alt="Admin Signin" width="400" height="300">
-
+<img src="Recess_Project/resources/images/admin_signin.PNG" alt="Admin Signin" width="400" height="300">
 
 Student Signin
 
-<img src="Recess_Project/resources/images/student_signin.png" alt="Student Signin" width="400" height="300">
+<img src="Recess_Project/resources/images/student_signin.PNG" alt="Student Signin" width="400" height="300">
 
 Student Signup
 
-<img src="Recess_Project/resources/images/student_signup.png" alt="Student Signu[]" width="400" height="400">
-
+<img src="Recess_Project/resources/images/student_signup.PNG" alt="Student Signu[]" width="400" height="400">
 
 Student Dashboard
 
-![Student Dashboard](Recess_Project/resources/images/student_dashboard.png)
+![Student Dashboard](Recess_Project/resources/images/student_dashboard.PNG)
 
 Student Forms
 
-![Student Forms](Recess_Project/resources/images/student_forms.png)
+![Student Forms](Recess_Project/resources/images/student_forms.PNG)
 
 Admin Dashboard
 
-![Admin Dashboard](Recess_Project/resources/images/admin_dashboard.png)
-
-
+![Admin Dashboard](Recess_Project/resources/images/admin_dashboard.PNG)
 
 View All Forms
 
-![View All Forms](Recess_Project/resources/images/view_all_forms.png)
+![View All Forms](Recess_Project/resources/images/view_all_forms.PNG)
 
 Create Form
 
-![Create Form](Recess_Project/resources/images/create_form.png)
+![Create Form](Recess_Project/resources/images/create_form.PNG)
 
 Add Question
 
-![Add Question](Recess_Project/resources/images/add_question1.png)
+![Add Question](Recess_Project/resources/images/add_question1.PNG)
 
-![Add Question](Recess_Project/resources/images/add_question2.png)
+![Add Question2](Recess_Project/resources/images/add_question2.PNG)
 
 View Summary Data
 
-![View Summary Data](Recess_Project/resources/images/view_summary_data1.png)
+![View Summary Data](Recess_Project/resources/images/view_summary_data1.PNG)
 
-![View Summary Data](Recess_Project/resources/images/view_summary_data2.png)
+![View Summary Data1](Recess_Project/resources/images/view_summary_data2.PNG)
 
-
-
-
-## ❗️ Note:
+## ❗️ Note
 
 - The project will run for 2 weeks starting on 24th July 2022 to 11th August 2023 till 11:59 pm.
 - Email us: jeff.geoff.cis@gmail.com cc. ndigezzalivingstone2@gmail.com and send us the link for the GitHub Repository!
 
-
 ## License
 
-This project is licensed under the [MIT License](./LICENSE). 
+This project is licensed under the [MIT License](./LICENSE).
 
 ---
